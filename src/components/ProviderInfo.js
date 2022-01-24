@@ -18,9 +18,16 @@ function ProviderInfo (props) {
         }
     }
     
+    /*
     return (
         <div id="ProviderInfo" className="top-margin">
         { (true) ? ('Web3 provider: ' + providerString + ' ') : ' ' }
+        <Badge bg = { connected ? 'success' : 'warning' }> { connected ? 'Connected!' : 'Not connected' } </Badge>
+        </div>
+    )
+    */
+    return (
+        <div id="ProviderInfo" className="top-margin">
         <Badge bg = { connected ? 'success' : 'warning' }> { connected ? 'Connected!' : 'Not connected' } </Badge>
         </div>
     )

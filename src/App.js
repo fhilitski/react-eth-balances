@@ -1,12 +1,13 @@
 //import logo from './logo.svg';
 import './App.css';
-import { Container, Row, Spinner, Alert } from 'react-bootstrap';
+import { Container, Row, Spinner, Alert, Col} from 'react-bootstrap';
 import Web3 from 'web3';
 import React from 'react';
 
 import { ProviderInfo } from './components/ProviderInfo'
 import { AccountsList } from './components/AccountList';
 import { ProviderSelector } from './components/ProviderSelector';
+import { selectOptions } from '@testing-library/user-event/dist/select-options';
 //import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
 
 
@@ -43,14 +44,22 @@ class App extends React.Component {
     this.getAccounts = this.getAccounts.bind(this);
     this.getBalance = this.getBalance.bind(this);
     this.getBalances = this.getBalances.bind(this);
+    this.connectWeb3ClientAndGetBalances = this.connectWeb3ClientAndGetBalances.bind(this);
+    this.providerChange = this.providerChange.bind(this);
   }
   
   async connectWeb3Client(providers, providerOptions, providerIndex) {
     //let web3Provider = new Web3.providers.HttpProvider(this.state.providerURl, providerOptions);
+    let selectedProvider = providers[providerIndex];
+    let currentProvider = undefined;
+  
+    if (typeof(selectedProvider) == "string") {
+      currentProvider = new Web3.providers.HttpProvider(selectedProvider, providerOptions);
+    }
+    else {
+      currentProvider = selectedProvider;
+    }
 
-    let currentProvider = providers[providerIndex];
-    console.log(providers);
-    console.log('Current provider: ' + currentProvider);
     let web3 = new Web3(currentProvider);  
     let errorMsg = "";
     let connected = false;
@@ -63,7 +72,6 @@ class App extends React.Component {
       errorMsg = "Error conecting to the Eth client or wallet. " + e;
       console.log(errorMsg); 
     };
-
     //do not set state in this function, use returned values to set state as:
     //this.setState({web3Client : web3, clientConnected : connected, clientError : errorMsg});
     return {web3, connected, errorMsg}
@@ -80,7 +88,6 @@ class App extends React.Component {
       errorMsg = "Error getting accounts from the wallet. " + e;
       console.log(errorMsg); 
     }
-
     //do not set state in this function, use returned values to set state as:
     //this.setState({accounts : accounts, clientError : errorMsg});
     return {accounts, errorMsg}
@@ -114,18 +121,10 @@ class App extends React.Component {
     return balances
   }
 
-  componentDidMount(){  
-    
-    let providers = [];
-    //add browser wallet if present
-    let browserProvider = Web3.givenProvider;
-    if (browserProvider !== null) providers.push(browserProvider); 
-    
-    //hard-code a couple of options for now
-    providers.push("http://192.168.1.182:8545");
-    providers.push("http://127.0.0.1:7545");
+  connectWeb3ClientAndGetBalances(providers, providerOptions, provideIndex){
+    this.setState({clientConnected : false});  //assume we are disconnected (even if were connected previously)
 
-    this.connectWeb3Client(providers, this.props.providerOptions, 0).
+    this.connectWeb3Client(providers, providerOptions, provideIndex).
     then((res) => {
       let web3 = res.web3;
       let connected = res.connected;
@@ -140,6 +139,24 @@ class App extends React.Component {
         then (resp => this.setState({accounts : accounts, clientError : errorMsg, balances : resp}));
       }); 
     });
+  }
+
+  providerChange(msg){
+    this.connectWeb3ClientAndGetBalances(this.state.providers, this.props.providerOptions, msg.target.value);
+  }
+
+  componentDidMount(){  
+        
+    let providers = [];
+    //add browser wallet if present
+    let browserProvider = Web3.givenProvider;
+    if (browserProvider !== null) providers.push(browserProvider); 
+    
+    //hard-code a couple of options for now
+    providers.push("http://192.168.1.182:8545");
+    providers.push("http://127.0.0.1:7545");
+
+    this.connectWeb3ClientAndGetBalances(providers, this.props.providerOptions, 0);
   }
 
   render() {
@@ -188,26 +205,21 @@ class App extends React.Component {
       <h1> Ethereum app </h1>
     </Row>
     <Row className="App-content top-margin">
-      <ProviderSelector providers={this.state.providers}/>
+      <Col> Web3 provider </Col>
+      <Col><ProviderSelector providers={this.state.providers} onChange={this.providerChange} /></Col>
+      <Col><ProviderInfo provider={this.state.web3Client} connected={this.state.clientConnected}/></Col>
     </Row>
-    <Row className="App-content top-margin">
-      {(this.state.clientConnected) ? 
-      (<ProviderInfo provider={this.state.web3Client} connected={this.state.clientConnected}/>)
-      :
+    <br/>
+    {
+      (this.state.clientConnected) ? ("") :
       (this.state.clientError === "") ?
-      (<Spinner animation="border" variant="secondary" />)
-      :
+      (<Spinner animation="border" variant="secondary" />) :
       (<Alert variant="danger">{this.state.clientError}</Alert>)
-      }
-    </Row>
-    
-    {(this.state.clientConnected) ?   
-    (<Row className='App-content'>
-      <AccountsList accounts={this.state.accounts} balances={this.state.balances}/>
-    </Row>)
-    :
-    ("")
-     }
+    }
+    {
+      (this.state.clientConnected) ?   
+      (<AccountsList accounts={this.state.accounts} balances={this.state.balances}/>) : ("")
+    }
     </Container>
   );
   }
