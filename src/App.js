@@ -7,7 +7,7 @@ import React from 'react';
 import { ProviderInfo } from './components/ProviderInfo'
 import { AccountsList } from './components/AccountList';
 import { ProviderSelector } from './components/ProviderSelector';
-import { selectOptions } from '@testing-library/user-event/dist/select-options';
+
 //import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
 
 
@@ -46,6 +46,7 @@ class App extends React.Component {
     this.getBalances = this.getBalances.bind(this);
     this.connectWeb3ClientAndGetBalances = this.connectWeb3ClientAndGetBalances.bind(this);
     this.providerChange = this.providerChange.bind(this);
+    this.setActiveAccount = this.setActiveAccount.bind(this);
   }
   
   async connectWeb3Client(providers, providerOptions, providerIndex) {
@@ -122,14 +123,24 @@ class App extends React.Component {
   }
 
   connectWeb3ClientAndGetBalances(providers, providerOptions, provideIndex){
-    this.setState({clientConnected : false});  //assume we are disconnected (even if were connected previously)
+    this.setState({
+      clientConnected : false,
+      activeAccount : 0,
+      accounts : [],
+      balances : [] 
+    });  //assume we are disconnected (even if were connected previously)
 
     this.connectWeb3Client(providers, providerOptions, provideIndex).
     then((res) => {
       let web3 = res.web3;
       let connected = res.connected;
       let errorMsg = res.errorMsg;
-      this.setState({providers: providers, web3Client : web3, clientConnected : connected, clientError : errorMsg});
+      this.setState({
+        providers: providers, 
+        web3Client : web3, 
+        clientConnected : connected, 
+        clientError : errorMsg
+      });
       
       if (connected) this.getAccounts(web3).
       then((res) => {
@@ -145,8 +156,12 @@ class App extends React.Component {
     this.connectWeb3ClientAndGetBalances(this.state.providers, this.props.providerOptions, msg.target.value);
   }
 
+  setActiveAccount(index){
+    this.setState({activeAccount : index})
+  }
+
   componentDidMount(){  
-        
+
     let providers = [];
     //add browser wallet if present
     let browserProvider = Web3.givenProvider;
@@ -218,7 +233,11 @@ class App extends React.Component {
     }
     {
       (this.state.clientConnected) ?   
-      (<AccountsList accounts={this.state.accounts} balances={this.state.balances}/>) : ("")
+      (<AccountsList accounts={this.state.accounts}
+                     balances={this.state.balances} 
+                     activeAccount={this.state.activeAccount}
+                     onClick={this.setActiveAccount}/>)
+      : ("")
     }
     </Container>
   );

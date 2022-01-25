@@ -16,33 +16,31 @@ function AccountsList (props) {
     }
     else {
       accountList = accounts.map((element, index) => {
-        let balance =  (isNaN(Number(balances[index]))) ? balances[index] : ("Balance: " + Number(balances[index]) + ' Eth') ;
-        console.log(balance);
+        let balance =  (isNaN(Number(balances[index]))) ? balances[index] : ("Balance: " + Number(balances[index]) + ' Eth');
         return(
         <ListGroup.Item
           as="li"
           className="d-flex justify-content-between align-items-start App-content" 
-          key = {index}
-        >
-        <div className="ms-2 me-auto">
-          <div className="fw-bold"> {element} </div>
-          {balance}
-        </div>
-        <Badge variant="primary" pill>
-          { index + 1}
-        </Badge>
+          key={index}
+          eventKey={index}
+          action
+          onClick={() => props.onClick(index)}
+          active={(index === props.activeAccount)}>
+          <div className="ms-2 me-auto" id={index}>
+            <div className="fw-bold"> {element} </div>
+            {balance}
+          </div>
+          <Badge variant="primary" pill>
+            { index + 1}
+          </Badge>
         </ListGroup.Item>)
       }); 
     }   
-        //console.log('Balances now: ' + balances);
-      accountList = <ListGroup as="ol" numbered> {accountList} </ListGroup>;
-
+    accountList = <ListGroup as="ol" numbered> {accountList} </ListGroup>;
     let retElement =
-      <div id = "accountList" className = "top-margin" >
+      <div id = "accountList" className = "top-margin">
           {accountList}
       </div>
-
     return (retElement)
   }
-
 export {AccountsList}
