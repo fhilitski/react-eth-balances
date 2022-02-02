@@ -1,6 +1,6 @@
 //import logo from './logo.svg';
 import './App.css';
-import { Container, Row, Spinner, Alert, Col} from 'react-bootstrap';
+import { Container, Row, Spinner, Alert, Col, Stack} from 'react-bootstrap';
 import Web3 from 'web3';
 import React from 'react';
 
@@ -219,10 +219,12 @@ class App extends React.Component {
     <Row className="justify-content-md-center">
       <h1> Ethereum app </h1>
     </Row>
-    <Row className="App-content top-margin">
-      <Col> Web3 provider </Col>
-      <Col><ProviderSelector providers={this.state.providers} onChange={this.providerChange} /></Col>
-      <Col><ProviderInfo provider={this.state.web3Client} connected={this.state.clientConnected}/></Col>
+    <Row id="providerSelectorAndInfo" className="App-content top-margin">
+      <Stack direction="horizontal" gap={3}>
+       <div> Web3 provider </div>
+       <div><ProviderSelector providers={this.state.providers} onChange={this.providerChange} /></div>
+       <div><ProviderInfo provider={this.state.web3Client} connected={this.state.clientConnected}/></div>
+      </Stack>
     </Row>
     <br/>
     {
@@ -239,6 +241,7 @@ class App extends React.Component {
                      onClick={this.setActiveAccount}/>)
       : ("")
     }
+    
     </Container>
   );
   }
