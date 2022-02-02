@@ -25,7 +25,8 @@ class App extends React.Component {
       clientError: "",
       accounts : [],
       balances : [],
-      activeAccount : 0
+      activeAccount : 0,
+      chainID : undefined
     };
     
     this.providerOptions = {
@@ -47,6 +48,7 @@ class App extends React.Component {
     this.connectWeb3ClientAndGetBalances = this.connectWeb3ClientAndGetBalances.bind(this);
     this.providerChange = this.providerChange.bind(this);
     this.setActiveAccount = this.setActiveAccount.bind(this);
+    this.getChainID = this.getChainID.bind(this);
   }
   
   async connectWeb3Client(providers, providerOptions, providerIndex) {
@@ -122,6 +124,21 @@ class App extends React.Component {
     return balances
   }
 
+  async getChainID(web3){
+    //get chain ID
+    let chainID = undefined;
+    let errorMsg = "";
+    try {
+      chainID = await web3.eth.getChainId()
+    }
+    catch (e) {
+      errorMsg = "Error getting chain ID " + e;
+      console.log(errorMsg);
+    }
+    return {chainID, errorMsg}
+  }
+  
+
   connectWeb3ClientAndGetBalances(providers, providerOptions, provideIndex){
     this.setState({
       clientConnected : false,
@@ -135,13 +152,30 @@ class App extends React.Component {
       let web3 = res.web3;
       let connected = res.connected;
       let errorMsg = res.errorMsg;
-      this.setState({
+      let chainID = undefined;
+
+      if (connected) this.getChainID(web3).
+      then((res) => {
+        chainID = res.chainID;
+        errorMsg = res.errorMsg;
+        
+        this.setState({
         providers: providers, 
         web3Client : web3, 
-        clientConnected : connected, 
+        clientConnected : connected,
+        chainID : chainID, 
         clientError : errorMsg
-      });
+        });
+      })
+      else this.setState({
+        providers: providers, 
+        web3Client : web3, 
+        clientConnected : connected,
+        chainID : chainID, 
+        clientError : errorMsg
+        });
       
+
       if (connected) this.getAccounts(web3).
       then((res) => {
         let accounts = res.accounts;
@@ -164,7 +198,8 @@ class App extends React.Component {
 
     let providers = [];
     //add browser wallet if present
-    let browserProvider = Web3.givenProvider;
+    //let browserProvider = Web3.givenProvider;
+    let browserProvider = window.ethereum;
     if (browserProvider !== null) providers.push(browserProvider); 
     
     //hard-code a couple of options for now
@@ -223,7 +258,11 @@ class App extends React.Component {
       <Stack direction="horizontal" gap={3}>
        <div> Web3 provider </div>
        <div><ProviderSelector providers={this.state.providers} onChange={this.providerChange} /></div>
-       <div><ProviderInfo provider={this.state.web3Client} connected={this.state.clientConnected}/></div>
+       <div><ProviderInfo 
+        provider={this.state.web3Client} 
+        connected={this.state.clientConnected} 
+        chainID = {this.state.chainID}/>
+       </div>
       </Stack>
     </Row>
     <br/>
@@ -241,7 +280,7 @@ class App extends React.Component {
                      onClick={this.setActiveAccount}/>)
       : ("")
     }
-    
+
     </Container>
   );
   }
