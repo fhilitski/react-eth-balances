@@ -1,12 +1,13 @@
 //import logo from './logo.svg';
 import './App.css';
-import { Container, Row, Spinner, Alert, Col, Stack} from 'react-bootstrap';
+import { Container, Row, Spinner, Alert, Col, Stack, Tabs, Tab} from 'react-bootstrap';
 import Web3 from 'web3';
 import React from 'react';
 
 import { ProviderInfo } from './components/ProviderInfo'
 import { AccountsList } from './components/AccountList';
 import { ProviderSelector } from './components/ProviderSelector';
+import { TokenBalance } from './components/TokenBalance'
 
 //import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
 
@@ -210,45 +211,6 @@ class App extends React.Component {
   }
 
   render() {
-
-  // The minimum ABI required to get the ERC20 Token balance
-  const minABI = [
-  // balanceOf
-  {
-    constant: true,
-    inputs: [{ name: "_owner", type: "address" }],
-    name: "balanceOf",
-    outputs: [{ name: "balance", type: "uint256" }],
-    type: "function"
-  }
-  ];
-
-  const BATtokenAddress = "0x0d8775f648430679a709e98d2b0cb6250d2887ef"; //BAT contract is 0x0d8775f648430679a709e98d2b0cb6250d2887ef 
-  var tokenAddress = BATtokenAddress;
- 
-
-  //let walletAddress = "0x1cf56Fd8e1567f8d663e54050d7e44643aF970Ce";
-  //walletAddress = "0x4f08633eaf6f89a630dd22c212ee277fb81878d5";
-  var walletAddress = "0x93c7845e6430bd9ea1e12de8d225db3d5fc969de";
-  //let walletAddress = tokenAddress;
-
-  /* var contract = new this.state.web3Client.eth.Contract(minABI, tokenAddress);
-  async function getBalance(walletAddr) {
-    let result = await contract.methods.balanceOf(walletAddr).call();
-    let format = this.state.web3Client.utils.fromWei(result);
-    return format;
-  }
-
-  this.state.web3Client.eth.net.isListening()
-  .then(() => { 
-      console.log('Client is connected!');
-      getBalance(walletAddress)
-      .then( resp => console.log("Token balance: " + resp))
-      .catch(e => console.log('Something went wrong: '+ e));
-  })
-  .catch(e => console.log('Wow. Something went wrong: '+ e));
- */
-
   return (
     <Container fluid className='App App-header'>
     <Row className="justify-content-md-center">
@@ -256,13 +218,13 @@ class App extends React.Component {
     </Row>
     <Row id="providerSelectorAndInfo" className="App-content top-margin">
       <Stack direction="horizontal" gap={3}>
-       <div> Web3 provider </div>
-       <div><ProviderSelector providers={this.state.providers} onChange={this.providerChange} /></div>
-       <div><ProviderInfo 
+      <div> Web3 provider </div>
+      <div><ProviderSelector providers={this.state.providers} onChange={this.providerChange} /></div>
+      <div><ProviderInfo 
         provider={this.state.web3Client} 
         connected={this.state.clientConnected} 
         chainID = {this.state.chainID}/>
-       </div>
+      </div>
       </Stack>
     </Row>
     <br/>
@@ -275,14 +237,27 @@ class App extends React.Component {
     {
       (this.state.clientConnected) ?   
       (<AccountsList accounts={this.state.accounts}
-                     balances={this.state.balances} 
-                     activeAccount={this.state.activeAccount}
-                     onClick={this.setActiveAccount}/>)
+                    balances={this.state.balances} 
+                    activeAccount={this.state.activeAccount}
+                    onClick={this.setActiveAccount}/>)
       : ("")
     }
-
+  <br/>
+  <Tabs defaultActiveKey="profile" id="actions" className="mb-3 App-content">
+    <Tab eventKey="home" title="Token balance " className="App-content">
+      <TokenBalance account={this.state.accounts[this.state.activeAccount]}
+                    web3={this.state.web3Client}
+      />
+    </Tab>
+    <Tab eventKey="profile" title="Send transaction">
+      {"Send transaction"}
+    </Tab>
+    <Tab eventKey="contact" title="Contact" disabled>
+      
+    </Tab>
+  </Tabs>
+    
     </Container>
-  );
-  }
+  );}
 }
 export default App;
