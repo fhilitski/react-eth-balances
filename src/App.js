@@ -245,9 +245,11 @@ class App extends React.Component {
   <br/>
   <Tabs defaultActiveKey="profile" id="actions" className="mb-3 App-content">
     <Tab eventKey="home" title="Token balance " className="App-content">
-      <TokenBalance account={this.state.accounts[this.state.activeAccount]}
-                    web3={this.state.web3Client}
-      />
+      {(this.state.clientConnected) ? 
+       (<TokenBalance account={this.state.accounts[this.state.activeAccount]}
+                     web3={this.state.web3Client}/>)
+       : ("")
+      }
     </Tab>
     <Tab eventKey="profile" title="Send transaction">
       {"Send transaction"}
@@ -256,7 +258,7 @@ class App extends React.Component {
       
     </Tab>
   </Tabs>
-    
+
     </Container>
   );}
 }
