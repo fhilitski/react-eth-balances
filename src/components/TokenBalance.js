@@ -62,7 +62,6 @@ class TokenBalance extends React.Component {
     let contractName = "";
     try {
       result = await contract.methods.name().call();
-      console.log(result);
     }
     catch (e) {
       errorMsg = e.toString();
@@ -94,10 +93,11 @@ class TokenBalance extends React.Component {
         console.log("Formatted balance: " + res.formatedBalance);
         console.log("Error message: " + res.errorMsg);
         tokenBalance = res.formatedBalance;
-        this.getName(this.props.web3, this.minABI, contractAddress).then((resp) =>
+        this.getName(this.props.web3, this.minABI, contractAddress).then((respGetName) =>
         {
-          contractName = resp.contractName;
-          this.setState({isLoading : false, tokenBalance : tokenBalance, contractName : contractName, errorMsg : res.errorMsg});
+          contractName = respGetName.contractName;
+          let errors = (res.errorMsg !== "") ? res.errorMsg : respGetName.errorMsg;
+          this.setState({isLoading : false, tokenBalance : tokenBalance, contractName : contractName, errorMsg : errors});
         });
         
       });
