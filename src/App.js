@@ -258,8 +258,7 @@ class App extends React.Component {
       
     </Tab>
   </Tabs>
-
-    </Container>
+  </Container>
   );}
 }
 export default App;

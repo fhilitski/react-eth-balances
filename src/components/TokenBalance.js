@@ -6,14 +6,15 @@ class TokenBalance extends React.Component {
     super(props);
     this.state = {
       isLoading : false,
-      contractAddress : undefined,
       tokenBalance : undefined,
+      contractName : undefined,
       errorMsg : undefined
     }
 
     this.account = props.account;
     this.web3 = props.web3; 
-    this.minABI = [{
+    this.minABI = [
+      {
       // The minimum ABI required to get the ERC20 Token balance
       // balanceOf ERC-20 function
         constant: true,
@@ -21,33 +22,24 @@ class TokenBalance extends React.Component {
         name: "balanceOf",
         outputs: [{ name: "balance", type: "uint256" }],
         type: "function"
-    }];
+      },
+      {
+        constant : true,
+        inputs : [],
+        name : "name",
+        outputs : [{ name: "", type: "string"}],
+        type : "function"
+      }
+    ];
     
     this.accountInput = React.createRef();
 
     this.getBalance = this.getBalance.bind(this);
+    this.getName = this.getName.bind(this);
     this.handleClick = this.handleClick.bind(this);
   
-    //const BATtokenAddress = "0x0d8775f648430679a709e98d2b0cb6250d2887ef"; 
     //BAT contract is 0x0d8775f648430679a709e98d2b0cb6250d2887ef 
   }
-
-  //const [isLoading, setLoading] = useState(false);
-  //const handleClick = () => setLoading(true);
-
-  //let account = props.account;
-  //let web3 = props.web3;
-  /*const minABI = [
-    // The minimum ABI required to get the ERC20 Token balance
-    // balanceOf ERC-20 function
-    {
-      constant: true,
-      inputs: [{ name: "_owner", type: "address" }],
-      name: "balanceOf",
-      outputs: [{ name: "balance", type: "uint256" }],
-      type: "function"
-    }];
-  */
   
   async getBalance(web3, ethAccount, abi, tokenAddress) {
     let contract = new web3.eth.Contract(abi, tokenAddress);
@@ -62,12 +54,32 @@ class TokenBalance extends React.Component {
     let formatedBalance = (result !== undefined) ? web3.utils.fromWei(result) : 0 ;
     return {formatedBalance, errorMsg};
   }
+
+  async getName(web3, abi, tokenAddress) {
+    let contract = new web3.eth.Contract(abi, tokenAddress);
+    let result = undefined;
+    let errorMsg = "";
+    let contractName = "";
+    try {
+      result = await contract.methods.name().call();
+      console.log(result);
+    }
+    catch (e) {
+      errorMsg = e.toString();
+    }
+    contractName = (errorMsg === "") ? (result +": ") : ("Token: ");
+    return {contractName, errorMsg};
+  }
   
-  handleClick(event) {
+  handleClick() {
     let contractAddress = this.accountInput.current.value;
+    let contractName = "";
+    let tokenBalance = undefined;
     //check that the entered address is correct
+    
+    /*
     let contractChecksumAddress = undefined;
-    /* try {
+    try {
       contractChecksumAddress = this.props.web3.utils.toChecksumAddress(contractAddress);
     }
     catch (e) {
@@ -75,17 +87,26 @@ class TokenBalance extends React.Component {
       console.log(errorMsg);
     }
     */
+
     if (this.props.web3.utils.isAddress(contractAddress)) {
-      this.setState({isLoading : true, contractAddress : contractAddress});  
+      this.setState({isLoading : true});  
       this.getBalance(this.props.web3, this.props.account, this.minABI, contractAddress).then((res) => {
         console.log("Formatted balance: " + res.formatedBalance);
         console.log("Error message: " + res.errorMsg);
-        this.setState({isLoading : false, tokenBalance : res.formatedBalance, errorMsg : res.errorMsg});
+        tokenBalance = res.formatedBalance;
+        this.getName(this.props.web3, this.minABI, contractAddress).then((resp) =>
+        {
+          contractName = resp.contractName;
+          this.setState({isLoading : false, tokenBalance : tokenBalance, contractName : contractName, errorMsg : res.errorMsg});
+        });
+        
       });
     }
     else {
       this.setState({errorMsg : "Error: Invalid contract address!"})
     }
+    
+    
   }
   
   render() {
@@ -122,8 +143,8 @@ class TokenBalance extends React.Component {
       <br/>
       <div id="tokenBalanceOutput">
         {(this.state.errorMsg === undefined || this.state.errorMsg === "") ? 
-        ((this.state.tokenBalance !== undefined) ? "Token balance: " + this.state.tokenBalance : "") 
-        : 
+        ((this.state.tokenBalance !== undefined) ? this.state.contractName + this.state.tokenBalance : "") 
+        :
         (<Alert variant="danger"> {this.state.errorMsg} </Alert>)
         }
       </div>
