@@ -8,6 +8,7 @@ class TokenBalance extends React.Component {
       isLoading : false,
       tokenBalance : undefined,
       contractName : undefined,
+      contractSymbol : undefined,
       errorMsg : undefined
     }
 
@@ -29,6 +30,13 @@ class TokenBalance extends React.Component {
         name : "name",
         outputs : [{ name: "", type: "string"}],
         type : "function"
+      },
+      {
+        constant : true,
+        inputs : [],
+        name : "symbol",
+        outputs : [{ name: "", type: "string"}],
+        type : "function"
       }
     ];
     
@@ -36,9 +44,8 @@ class TokenBalance extends React.Component {
 
     this.getBalance = this.getBalance.bind(this);
     this.getName = this.getName.bind(this);
+    this.getSymbol = this.getSymbol.bind(this);
     this.handleClick = this.handleClick.bind(this);
-  
-    //BAT contract is 0x0d8775f648430679a709e98d2b0cb6250d2887ef 
   }
   
   async getBalance(web3, ethAccount, abi, tokenAddress) {
@@ -66,17 +73,33 @@ class TokenBalance extends React.Component {
     catch (e) {
       errorMsg = e.toString();
     }
-    contractName = (errorMsg === "") ? (result +": ") : ("Token: ");
+    contractName = (errorMsg === "") ? (result) : ("Token: ");
     return {contractName, errorMsg};
+  }
+
+  async getSymbol(web3, abi, tokenAddress) {
+    let contract = new web3.eth.Contract(abi, tokenAddress);
+    let result = undefined;
+    let errorMsg = "";
+    let contractSymbol = "";
+    try {
+      result = await contract.methods.symbol().call();
+    }
+    catch (e) {
+      errorMsg = e.toString();
+    }
+    contractSymbol = result;
+    return {contractSymbol, errorMsg};
   }
   
   handleClick() {
     let contractAddress = this.accountInput.current.value;
     let contractName = "";
+    let contractSymbol = "";
     let tokenBalance = undefined;
-    //check that the entered address is correct
     
-    /*
+    //check that the entered address is correct
+    /* This is one way to check, using web3.utils.toChecksumAddress
     let contractChecksumAddress = undefined;
     try {
       contractChecksumAddress = this.props.web3.utils.toChecksumAddress(contractAddress);
@@ -97,9 +120,19 @@ class TokenBalance extends React.Component {
         {
           contractName = respGetName.contractName;
           let errors = (res.errorMsg !== "") ? res.errorMsg : respGetName.errorMsg;
-          this.setState({isLoading : false, tokenBalance : tokenBalance, contractName : contractName, errorMsg : errors});
-        });
-        
+          this.getSymbol(this.props.web3, this.minABI, contractAddress).then((respGetSymbol) =>
+          {
+            contractSymbol = respGetSymbol.
+            errors = ( errors !== "") ? errors : respGetSymbol.errorMsg;
+            this.setState({isLoading : false,
+                           tokenBalance : tokenBalance, 
+                           contractName : contractName, 
+                           contractSymbol : respGetSymbol.contractSymbol,
+                           errorMsg : errors
+
+            });
+          });
+        });       
       });
     }
     else {
@@ -143,7 +176,10 @@ class TokenBalance extends React.Component {
       <br/>
       <div id="tokenBalanceOutput">
         {(this.state.errorMsg === undefined || this.state.errorMsg === "") ? 
-        ((this.state.tokenBalance !== undefined) ? this.state.contractName + this.state.tokenBalance : "") 
+        ((this.state.tokenBalance !== undefined) 
+          ? this.state.contractName + ": " + this.state.tokenBalance + " " + this.state.contractSymbol
+          : ""
+        ) 
         :
         (<Alert variant="danger"> {this.state.errorMsg} </Alert>)
         }
