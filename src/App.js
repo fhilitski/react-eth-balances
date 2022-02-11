@@ -208,6 +208,12 @@ class App extends React.Component {
     providers.push("http://127.0.0.1:7545");
 
     this.connectWeb3ClientAndGetBalances(providers, this.props.providerOptions, 0);
+
+    window.ethereum.on('accountsChanged', (accounts) => {
+      // Handle the new accounts, or lack thereof.
+      // "accounts" will always be an array, but it can be empty.
+      this.connectWeb3ClientAndGetBalances(providers, this.props.providerOptions, 0);
+    });
   }
 
   render() {
@@ -254,7 +260,7 @@ class App extends React.Component {
     <Tab eventKey="profile" title="Send transaction">
       {"Send transaction"}
     </Tab>
-    <Tab eventKey="contact" title="Contact" disabled>
+    <Tab eventKey="contact" title="Contact">
       
     </Tab>
   </Tabs>
