@@ -268,7 +268,7 @@ class App extends React.Component {
 
     </Tab>
     <Tab eventKey="contact" title="Contact">
-     <Button onClick={() => window.location = 'mailto:ethinteract@gmail.com'}>Contact us</Button>
+     <a href = "mailto:ethinteract@gmail.com" target="_blank">Contact us</a>
 
     </Tab>
   </Tabs>
