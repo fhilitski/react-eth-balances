@@ -1,7 +1,7 @@
 import {Button, FloatingLabel, Form, Alert, Row, Col} from 'react-bootstrap'
 import React from 'react';
 
-class TokenBalance extends React.Component {
+class SendEthTransaction extends React.Component {
   constructor (props) {
     super(props);
     this.state = {
@@ -143,7 +143,7 @@ class TokenBalance extends React.Component {
   render() {
   let retElement =
     <div id="tokenBalanceChecker" className="top-margin" >
-      <p> Enter ERC-20 contract address to check token balnace </p>
+      <p> Send ETH transaction </p>
       <Form>
       <Row>
       <Col xs={12} md={8}>
@@ -188,4 +188,4 @@ class TokenBalance extends React.Component {
   }
 }
 
-export {TokenBalance}
+export {SendEthTransaction}
