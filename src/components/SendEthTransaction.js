@@ -6,41 +6,20 @@ class SendEthTransaction extends React.Component {
     super(props);
     this.state = {
       isLoading : false,
-      tokenBalance : undefined,
-      contractName : undefined,
-      contractSymbol : undefined,
       errorMsg : undefined
     }
 
     this.account = props.account;
     this.web3 = props.web3; 
-    this.minABI = [
-      {
-      // The minimum ABI required to get the ERC20 Token balance
-      // balanceOf ERC-20 function
-        constant: true,
-        inputs: [{ name: "_owner", type: "address" }],
-        name: "balanceOf",
-        outputs: [{ name: "balance", type: "uint256" }],
-        type: "function"
-      },
-      {
-        constant : true,
-        inputs : [],
-        name : "name",
-        outputs : [{ name: "", type: "string"}],
-        type : "function"
-      },
-      {
-        constant : true,
-        inputs : [],
-        name : "symbol",
-        outputs : [{ name: "", type: "string"}],
-        type : "function"
-      }
-    ];
     
-    this.accountInput = React.createRef();
+    this.accountFrom = React.createRef();
+    this.accountTo = React.createRef();
+    this.valueEth = React.createRef();
+    this.valueGas = React.createRef();
+    this.priceGas = React.createRef();
+    this.transactionData = React.createRef();
+    this.nonce = React.createRef();
+
 
     this.getBalance = this.getBalance.bind(this);
     this.getName = this.getName.bind(this);
@@ -93,10 +72,15 @@ class SendEthTransaction extends React.Component {
   }
   
   handleClick() {
-    let contractAddress = this.accountInput.current.value;
-    let contractName = "";
-    let contractSymbol = "";
-    let tokenBalance = undefined;
+    
+    let fromAddress = this.accountFrom.current.value;
+    let toAddress = this.accountTo.current.value;
+    let valueEth = this.valueEth.current.value;
+    let valueGas = this.valueGas.current.value;
+    let priceGas = this.priceGas.current.value;
+    let transactionData = this.transactionData.current.value;
+    let nonce = this.nonce.current.value;;
+
     
     //check that the entered address is correct
     /* This is one way to check, using web3.utils.toChecksumAddress
@@ -110,8 +94,17 @@ class SendEthTransaction extends React.Component {
     }
     */
 
-    if (this.props.web3.utils.isAddress(contractAddress)) {
+    if (this.props.web3.utils.isAddress(fromAddress)) {
       this.setState({isLoading : true});  
+      console.log(fromAddress);
+      console.log(toAddress);
+      console.log(valueEth);
+      console.log(valueGas);
+      console.log(priceGas);
+      console.log(transactionData);
+      console.log(nonce);
+
+      /*
       this.getBalance(this.props.web3, this.props.account, this.minABI, contractAddress).then((res) => {
         console.log("Formatted balance: " + res.formatedBalance);
         console.log("Error message: " + res.errorMsg);
@@ -134,46 +127,152 @@ class SendEthTransaction extends React.Component {
           });
         });       
       });
+      */
     }
     else {
-      this.setState({errorMsg : "Error: Invalid contract address!"})
+      this.setState({errorMsg : "Error: Invalid from address!"})
     }
   }
   
   render() {
   let retElement =
-    <div id="tokenBalanceChecker" className="top-margin" >
-      <p> Send ETH transaction </p>
+    <div id="transactionConfiguration" className="top-margin" >
       <Form>
       <Row>
-      <Col xs={12} md={8}>
+      <Col>
         <FloatingLabel
-        controlId="floatingInput"
-        label="Contract address"
-        className="mb-2 dark-text"
+          controlId="floatingInput"
+          label="From address"
+          className="mb-2 dark-text"
         >
         <Form.Control
           type="text"
           className="dark-text"
-          placeholder="0x0000000000000000000000000000000000000000"
-          ref={this.accountInput}
+          placeholder={this.account}
+          ref={this.accountFrom}
+          defaultValue={this.props.account} 
         />
         </FloatingLabel>
       </Col>
-      <Col xs={6} md={4}> 
+      </Row>
+
+      <Row>
+      <Col>
+        <FloatingLabel
+          controlId="floatingInput"
+          label="To address"
+          className="mb-2 dark-text"
+        >
+        <Form.Control
+          type="text"
+          className="dark-text"
+          placeholder="0x000"
+          ref={this.accountTo}
+        />
+        </FloatingLabel>
+      </Col>
+      </Row>
+
+      <Row>
+      <Col>
+        <FloatingLabel
+          controlId="floatingInput"
+          label="Value in ETH"
+          className="mb-2 dark-text"
+        >
+        <Form.Control
+          type="text"
+          className="dark-text"
+          placeholder="0"
+          ref={this.valueEth}
+        />
+        </FloatingLabel>
+      </Col>
+      </Row>
+
+      <Row>
+      <Col>
+        <FloatingLabel
+          controlId="floatingInput"
+          label="Gas"
+          className="mb-2 dark-text"
+        >
+        <Form.Control
+          type="text"
+          className="dark-text"
+          placeholder="0"
+          ref={this.valueGas}
+        />
+        </FloatingLabel>
+      </Col>
+      </Row>
+      
+      <Row>
+      <Col>
+        <FloatingLabel
+          controlId="floatingInput"
+          label="Gas price"
+          className="mb-2 dark-text"
+        >
+        <Form.Control
+          type="text"
+          className="dark-text"
+          placeholder="0"
+          ref={this.priceGas}
+        />
+        </FloatingLabel>
+      </Col>
+      </Row>
+
+      <Row>
+      <Col>
+        <FloatingLabel
+          controlId="floatingInput"
+          label="Data"
+          className="mb-2 dark-text"
+        >
+        <Form.Control
+          type="text"
+          className="dark-text"
+          placeholder="0"
+          ref={this.transactionData}
+        />
+        </FloatingLabel>
+      </Col>
+      </Row>
+
+      <Row>
+      <Col>
+        <FloatingLabel
+          controlId="floatingInput"
+          label="Nonce"
+          className="mb-2 dark-text"
+        >
+        <Form.Control
+          type="text"
+          className="dark-text"
+          placeholder="0"
+          ref={this.nonce}
+        />
+        </FloatingLabel>
+      </Col>
+      </Row>
+
+      <Row>
+      <Col> 
         <Button
           type="button"
           variant="primary"
           disabled={this.state.isLoading}
           onClick={!this.state.isLoading ? this.handleClick : null}
         >
-          {this.state.isLoading ? "Loading…" : "Get token balance"}
+          {this.state.isLoading ? "Loading…" : "Send transaction"}
         </Button>
       </Col>
       </Row>
       </Form>
       <br/>
-      <div id="tokenBalanceOutput">
+      <div id="transacionDetailsOutput">
         {(this.state.errorMsg === undefined || this.state.errorMsg === "") ? 
         ((this.state.tokenBalance !== undefined) 
           ? this.state.contractName + ": " + this.state.tokenBalance + " " + this.state.contractSymbol
