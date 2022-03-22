@@ -15,3 +15,8 @@ code {
 .top-margin { 
   margin-top: 1rem;
 }
+
+.min-width {
+  min-width: 400px;
+  max-width: 600px;
+}

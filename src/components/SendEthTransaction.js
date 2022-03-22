@@ -72,15 +72,22 @@ class SendEthTransaction extends React.Component {
   }
   
   handleClick() {
-    
+
     let fromAddress = this.accountFrom.current.value;
     let toAddress = this.accountTo.current.value;
     let valueEth = this.valueEth.current.value;
-    let valueGas = this.valueGas.current.value;
+    let valueGasInWei = this.valueGas.current.value;
     let priceGas = this.priceGas.current.value;
     let transactionData = this.transactionData.current.value;
     let nonce = this.nonce.current.value;;
 
+    console.log(fromAddress);
+    console.log(toAddress);
+    console.log(valueEth);
+    console.log(valueGasInWei);
+    console.log("priceGas: " + priceGas);
+    console.log(transactionData);
+    console.log(nonce);
     
     //check that the entered address is correct
     /* This is one way to check, using web3.utils.toChecksumAddress
@@ -93,17 +100,79 @@ class SendEthTransaction extends React.Component {
       console.log(errorMsg);
     }
     */
-
+    let inputIsValid = false;
     if (this.props.web3.utils.isAddress(fromAddress)) {
-      this.setState({isLoading : true});  
-      console.log(fromAddress);
-      console.log(toAddress);
-      console.log(valueEth);
-      console.log(valueGas);
-      console.log(priceGas);
-      console.log(transactionData);
-      console.log(nonce);
+      inputIsValid = true;
+    }
+    else {
+      this.setState({errorMsg : "Error: Invalid from address!"})
+    }
 
+    if (this.props.web3.utils.isAddress(toAddress)) {
+      inputIsValid = inputIsValid && true;
+    }
+    else {
+      inputIsValid = false;
+      this.setState({errorMsg : "Error: Invalid to address!"})
+    }
+    
+    let valueEthInWei = undefined;
+    let valueGas = undefined;
+    let priceGasInWei = undefined;
+
+    if (inputIsValid) {
+      try { 
+        valueEthInWei = this.props.web3.utils.toWei(valueEth);
+      }
+      catch (problem) {
+        inputIsValid = false; 
+        this.setState({errorMsg : problem.toString()})
+      };
+    };
+
+    if (inputIsValid) {
+      try { 
+        valueGas = this.props.web3.utils.fromWei(valueGasInWei);
+      }
+      catch (problem) {
+        inputIsValid = false; 
+        this.setState({errorMsg : problem.toString()})
+      };
+    };
+
+    if (inputIsValid) {
+      try { 
+        priceGasInWei = this.props.web3.utils.fromWei(priceGas);
+      }
+      catch (problem) {
+        inputIsValid = false; 
+        this.setState({errorMsg : problem.toString()})
+      };
+    };
+    
+    if (inputIsValid) {
+      this.setState({isLoading : true, errorMsg : undefined});  
+      let transactionObject = {
+        from:  fromAddress,
+        to:    toAddress,
+        value: valueEthInWei,
+        data : transactionData,
+        nonce: nonce
+      };
+      console.log(transactionObject);
+      if (valueGasInWei >= 0) transactionObject.gas = valueGasInWei;
+      if (priceGasInWei >= 0) transactionObject.gasPrice = priceGasInWei;
+      if (transactionData !== "") transactionObject.data = transactionData;
+      if (nonce !== "") transactionObject.nonce = nonce;
+      
+      console.log(transactionObject);
+      this.props.web3.eth.sendTransaction(transactionObject)
+      .then((receipt) => {
+        console.log(receipt);
+        this.setState({isLoading : false});
+      }).catch((err) => { 
+        this.setState({isLoading : false, errorMsg: (( err.message === undefined) ? err.toString() : err.message)  });
+      });
       /*
       this.getBalance(this.props.web3, this.props.account, this.minABI, contractAddress).then((res) => {
         console.log("Formatted balance: " + res.formatedBalance);
@@ -129,14 +198,12 @@ class SendEthTransaction extends React.Component {
       });
       */
     }
-    else {
-      this.setState({errorMsg : "Error: Invalid from address!"})
-    }
+
   }
   
   render() {
   let retElement =
-    <div id="transactionConfiguration" className="top-margin" >
+    <div id="transactionConfiguration" className="top-margin min-width" >
       <Form>
       <Row>
       <Col>
@@ -194,7 +261,7 @@ class SendEthTransaction extends React.Component {
       <Col>
         <FloatingLabel
           controlId="floatingInput"
-          label="Gas"
+          label="Gas (in Wei)"
           className="mb-2 dark-text"
         >
         <Form.Control
@@ -271,6 +338,7 @@ class SendEthTransaction extends React.Component {
       </Col>
       </Row>
       </Form>
+
       <br/>
       <div id="transacionDetailsOutput">
         {(this.state.errorMsg === undefined || this.state.errorMsg === "") ? 
