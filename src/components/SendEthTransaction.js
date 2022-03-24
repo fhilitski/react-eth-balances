@@ -5,6 +5,7 @@ class SendEthTransaction extends React.Component {
   constructor (props) {
     super(props);
     this.state = {
+      transactionReceipt : undefined,
       isLoading : false,
       errorMsg : undefined
     }
@@ -20,13 +21,11 @@ class SendEthTransaction extends React.Component {
     this.transactionData = React.createRef();
     this.nonce = React.createRef();
 
-
-    this.getBalance = this.getBalance.bind(this);
-    this.getName = this.getName.bind(this);
-    this.getSymbol = this.getSymbol.bind(this);
+    //this.getBalance = this.getBalance.bind(this);
     this.handleClick = this.handleClick.bind(this);
   }
   
+  /*
   async getBalance(web3, ethAccount, abi, tokenAddress) {
     let contract = new web3.eth.Contract(abi, tokenAddress);
     let result = undefined;
@@ -40,52 +39,24 @@ class SendEthTransaction extends React.Component {
     let formatedBalance = (result !== undefined) ? web3.utils.fromWei(result) : 0 ;
     return {formatedBalance, errorMsg};
   }
+  */
 
-  async getName(web3, abi, tokenAddress) {
-    let contract = new web3.eth.Contract(abi, tokenAddress);
-    let result = undefined;
-    let errorMsg = "";
-    let contractName = "";
-    try {
-      result = await contract.methods.name().call();
-    }
-    catch (e) {
-      errorMsg = e.toString();
-    }
-    contractName = (errorMsg === "") ? (result) : ("Token: ");
-    return {contractName, errorMsg};
-  }
-
-  async getSymbol(web3, abi, tokenAddress) {
-    let contract = new web3.eth.Contract(abi, tokenAddress);
-    let result = undefined;
-    let errorMsg = "";
-    let contractSymbol = "";
-    try {
-      result = await contract.methods.symbol().call();
-    }
-    catch (e) {
-      errorMsg = e.toString();
-    }
-    contractSymbol = result;
-    return {contractSymbol, errorMsg};
-  }
-  
   handleClick() {
+    let inputIsValid = false;
 
     let fromAddress = this.accountFrom.current.value;
     let toAddress = this.accountTo.current.value;
     let valueEth = this.valueEth.current.value;
     let valueGasInWei = this.valueGas.current.value;
-    let priceGas = this.priceGas.current.value;
+    let priceGasInWei = this.priceGas.current.value;
     let transactionData = this.transactionData.current.value;
     let nonce = this.nonce.current.value;;
 
     console.log(fromAddress);
     console.log(toAddress);
     console.log(valueEth);
-    console.log(valueGasInWei);
-    console.log("priceGas: " + priceGas);
+    console.log("valueGas: " + valueGasInWei);
+    console.log("priceGas: " + priceGasInWei);
     console.log(transactionData);
     console.log(nonce);
     
@@ -100,7 +71,7 @@ class SendEthTransaction extends React.Component {
       console.log(errorMsg);
     }
     */
-    let inputIsValid = false;
+
     if (this.props.web3.utils.isAddress(fromAddress)) {
       inputIsValid = true;
     }
@@ -117,9 +88,6 @@ class SendEthTransaction extends React.Component {
     }
     
     let valueEthInWei = undefined;
-    let valueGas = undefined;
-    let priceGasInWei = undefined;
-
     if (inputIsValid) {
       try { 
         valueEthInWei = this.props.web3.utils.toWei(valueEth);
@@ -130,6 +98,7 @@ class SendEthTransaction extends React.Component {
       };
     };
 
+    let valueGas = undefined;
     if (inputIsValid) {
       try { 
         valueGas = this.props.web3.utils.fromWei(valueGasInWei);
@@ -137,17 +106,29 @@ class SendEthTransaction extends React.Component {
       catch (problem) {
         inputIsValid = false; 
         this.setState({errorMsg : problem.toString()})
-      };
+      }
+      finally {
+        console.log('value Gas in ETH: ' + valueGas);
+        if (valueGas < 0) {
+          this.setState({errorMsg : "Gas should be non-negative!"});
+          inputIsValid = false; 
+        }
+      }
     };
 
+    let priceGas = undefined;
     if (inputIsValid) {
       try { 
-        priceGasInWei = this.props.web3.utils.fromWei(priceGas);
+        priceGas = this.props.web3.utils.fromWei(priceGasInWei);
       }
       catch (problem) {
         inputIsValid = false; 
         this.setState({errorMsg : problem.toString()})
-      };
+      }
+      finally {
+        if (priceGasInWei < 0)
+        this.setState({errorMsg : "Gas price should be non-negative!"})
+      }
     };
     
     if (inputIsValid) {
@@ -155,21 +136,20 @@ class SendEthTransaction extends React.Component {
       let transactionObject = {
         from:  fromAddress,
         to:    toAddress,
-        value: valueEthInWei,
-        data : transactionData,
-        nonce: nonce
+        value: valueEthInWei
       };
       console.log(transactionObject);
-      if (valueGasInWei >= 0) transactionObject.gas = valueGasInWei;
-      if (priceGasInWei >= 0) transactionObject.gasPrice = priceGasInWei;
+      
+      if (valueGasInWei !== "" ) transactionObject.gas = valueGasInWei;
+      if (priceGasInWei !== "" ) transactionObject.gasPrice = priceGasInWei;
       if (transactionData !== "") transactionObject.data = transactionData;
       if (nonce !== "") transactionObject.nonce = nonce;
-      
       console.log(transactionObject);
+
       this.props.web3.eth.sendTransaction(transactionObject)
       .then((receipt) => {
         console.log(receipt);
-        this.setState({isLoading : false});
+        this.setState({isLoading : false, transactionReceipt : receipt});
       }).catch((err) => { 
         this.setState({isLoading : false, errorMsg: (( err.message === undefined) ? err.toString() : err.message)  });
       });
@@ -204,7 +184,7 @@ class SendEthTransaction extends React.Component {
   render() {
   let retElement =
     <div id="transactionConfiguration" className="top-margin min-width" >
-      <Form>
+      <Form noValidate validated={false}>
       <Row>
       <Col>
         <FloatingLabel
@@ -213,9 +193,12 @@ class SendEthTransaction extends React.Component {
           className="mb-2 dark-text"
         >
         <Form.Control
+          //readOnly
+          //disabled
           type="text"
+          name="fromAddress"
           className="dark-text"
-          placeholder={this.account}
+          placeholder={this.props.account}
           ref={this.accountFrom}
           defaultValue={this.props.account} 
         />
@@ -233,7 +216,7 @@ class SendEthTransaction extends React.Component {
         <Form.Control
           type="text"
           className="dark-text"
-          placeholder="0x000"
+          defaultValue="0x0000000000000000000000000000000000000000"
           ref={this.accountTo}
         />
         </FloatingLabel>
@@ -248,11 +231,13 @@ class SendEthTransaction extends React.Component {
           className="mb-2 dark-text"
         >
         <Form.Control
-          type="text"
+          type="number"
           className="dark-text"
-          placeholder="0"
           ref={this.valueEth}
         />
+        <Form.Control.Feedback type="invalid">
+            Please provide a valid amount
+        </Form.Control.Feedback>
         </FloatingLabel>
       </Col>
       </Row>
@@ -261,14 +246,14 @@ class SendEthTransaction extends React.Component {
       <Col>
         <FloatingLabel
           controlId="floatingInput"
-          label="Gas (in Wei)"
+          label="Gas limit (Wei)"
           className="mb-2 dark-text"
         >
         <Form.Control
-          type="text"
+          type="number"
           className="dark-text"
-          placeholder="0"
           ref={this.valueGas}
+          defaultValue={undefined}
         />
         </FloatingLabel>
       </Col>
@@ -278,13 +263,13 @@ class SendEthTransaction extends React.Component {
       <Col>
         <FloatingLabel
           controlId="floatingInput"
-          label="Gas price"
+          label="Gas price (Wei)"
           className="mb-2 dark-text"
         >
         <Form.Control
           type="text"
           className="dark-text"
-          placeholder="0"
+          defaultValue={undefined}
           ref={this.priceGas}
         />
         </FloatingLabel>
@@ -333,7 +318,7 @@ class SendEthTransaction extends React.Component {
           disabled={this.state.isLoading}
           onClick={!this.state.isLoading ? this.handleClick : null}
         >
-          {this.state.isLoading ? "Loading…" : "Send transaction"}
+          {this.state.isLoading ? "Sending…" : "Send transaction"}
         </Button>
       </Col>
       </Row>
@@ -342,8 +327,8 @@ class SendEthTransaction extends React.Component {
       <br/>
       <div id="transacionDetailsOutput">
         {(this.state.errorMsg === undefined || this.state.errorMsg === "") ? 
-        ((this.state.tokenBalance !== undefined) 
-          ? this.state.contractName + ": " + this.state.tokenBalance + " " + this.state.contractSymbol
+        ((this.state.transactionReceipt !== undefined) 
+          ? JSON.stringify(this.state.transactionReceipt)
           : ""
         ) 
         :
