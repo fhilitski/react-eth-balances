@@ -1,5 +1,6 @@
 import {Button, FloatingLabel, Form, Alert, Row, Col} from 'react-bootstrap'
 import React from 'react';
+import { TransactionInfo } from './TransactionInfo';
 
 class SendEthTransaction extends React.Component {
   constructor (props) {
@@ -328,7 +329,7 @@ class SendEthTransaction extends React.Component {
       <div id="transacionDetailsOutput">
         {(this.state.errorMsg === undefined || this.state.errorMsg === "") ? 
         ((this.state.transactionReceipt !== undefined) 
-          ? JSON.stringify(this.state.transactionReceipt)
+          ? (<TransactionInfo transactionObject={this.state.transactionReceipt}/>)
           : ""
         ) 
         :
