@@ -1,4 +1,4 @@
-import {Button, FloatingLabel, Form, Alert, Row, Col} from 'react-bootstrap'
+import {Stack, Button, FloatingLabel, Form, Alert, Row, Col} from 'react-bootstrap'
 import React from 'react';
 import { TransactionInfo } from './TransactionInfo';
 
@@ -131,6 +131,14 @@ class SendEthTransaction extends React.Component {
         this.setState({errorMsg : "Gas price should be non-negative!"})
       }
     };
+
+    if (nonce !== "") {
+      try {this.props.web3.utils.numberToHex(nonce)}
+      catch (problem) {
+        inputIsValid = false; 
+        this.setState({errorMsg : problem.toString()})
+      }
+    };
     
     if (inputIsValid) {
       this.setState({isLoading : true, errorMsg : undefined});  
@@ -143,17 +151,23 @@ class SendEthTransaction extends React.Component {
       
       if (valueGasInWei !== "" ) transactionObject.gas = valueGasInWei;
       if (priceGasInWei !== "" ) transactionObject.gasPrice = priceGasInWei;
-      if (transactionData !== "") transactionObject.data = transactionData;
+      if (transactionData !== "") transactionObject.data = this.props.web3.utils.utf8ToHex(transactionData);
       if (nonce !== "") transactionObject.nonce = nonce;
+
       console.log(transactionObject);
 
       this.props.web3.eth.sendTransaction(transactionObject)
-      .then((receipt) => {
+      //.once('sending', console.log)
+      .on('recept', (receipt) => {
         console.log(receipt);
         this.setState({isLoading : false, transactionReceipt : receipt});
-      }).catch((err) => { 
-        this.setState({isLoading : false, errorMsg: (( err.message === undefined) ? err.toString() : err.message)  });
-      });
+      })
+      .on('confirmation', (confirmationNumber, receipt) => {
+        this.setState({isLoading : false, transactionReceipt : receipt});
+        console.log('Transaction confirmed!');
+      })
+      .on('error', (error) => { this.setState({isLoading : false, errorMsg: ((error.message === undefined) ? error.toString() : error.message)})}
+      );
       /*
       this.getBalance(this.props.web3, this.props.account, this.minABI, contractAddress).then((res) => {
         console.log("Formatted balance: " + res.formatedBalance);
@@ -184,7 +198,9 @@ class SendEthTransaction extends React.Component {
   
   render() {
   let retElement =
-    <div id="transactionConfiguration" className="top-margin min-width" >
+    <div id="transactionConfiguration" className="top-margin min-width " >
+     <Stack direction="horizontal" gap={3}> 
+      <div className="min-width">
       <Form noValidate validated={false}>
       <Row>
       <Col>
@@ -281,7 +297,7 @@ class SendEthTransaction extends React.Component {
       <Col>
         <FloatingLabel
           controlId="floatingInput"
-          label="Data"
+          label="Data (optional, plaintext)"
           className="mb-2 dark-text"
         >
         <Form.Control
@@ -298,7 +314,7 @@ class SendEthTransaction extends React.Component {
       <Col>
         <FloatingLabel
           controlId="floatingInput"
-          label="Nonce"
+          label="Nonce (optional)"
           className="mb-2 dark-text"
         >
         <Form.Control
@@ -324,7 +340,9 @@ class SendEthTransaction extends React.Component {
       </Col>
       </Row>
       </Form>
+      </div>
 
+      <div className="min-width">
       <br/>
       <div id="transacionDetailsOutput">
         {(this.state.errorMsg === undefined || this.state.errorMsg === "") ? 
@@ -336,6 +354,8 @@ class SendEthTransaction extends React.Component {
         (<Alert variant="danger"> {this.state.errorMsg} </Alert>)
         }
       </div>
+      </div>
+     </Stack> 
     </div>
     return (retElement)
   }
