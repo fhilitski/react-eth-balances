@@ -24,3 +24,15 @@ code {
 .align-top {
   align-items: flex-start;
 }
+
+.transaction-details {
+  background-color: #282c34;
+  color: white;
+  font-size: 1rem;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.transaction-details-label {
+  font-size: 0.95rem;
+}

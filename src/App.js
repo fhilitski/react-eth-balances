@@ -1,6 +1,6 @@
 //import logo from './logo.svg';
 import './App.css';
-import { Container, Row, Spinner, Alert, Col, Stack, Tabs, Tab, Button} from 'react-bootstrap';
+import { Container, Row, Spinner, Alert, Col, Stack, Tabs, Tab} from 'react-bootstrap';
 import Web3 from 'web3';
 import React from 'react';
 
