@@ -1,4 +1,4 @@
-import {ListGroup, Badge, Alert, NavItem} from 'react-bootstrap'
+import {ListGroup, Badge} from 'react-bootstrap'
 
 function TransactionInfo (props) {
     let transactionObject = props.transactionObject;
@@ -12,7 +12,7 @@ function TransactionInfo (props) {
         let returnListItem = "";
 
 
-        let excludeFieldArray = new Array("logs", "logsBloom","from","to","status");
+        let excludeFieldArray = ["logs", "logsBloom","from","to","status"];
         if (key[1] !== null && !excludeFieldArray.includes(key[0])) {
           //construct output row
           returnListItem =
@@ -22,7 +22,7 @@ function TransactionInfo (props) {
             >
             
             <div className="transaction-details">
-              {(transactionConfirmed && key[0] == "transactionHash") ? (<Badge  bg="success"> Confirmed {transactionConfirmed} blocks! </Badge>) : "" }
+              {(transactionConfirmed && (key[0] === "transactionHash")) ? (<Badge  bg="success"> Confirmed {transactionConfirmed} blocks! </Badge>) : "" }
               <span
                 className="transaction-details-label"
                 id="transactionDetailFieldName"
