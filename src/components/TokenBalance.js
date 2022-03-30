@@ -143,7 +143,7 @@ class TokenBalance extends React.Component {
   render() {
   let retElement =
     <div id="tokenBalanceChecker" className="top-margin" >
-      <p> Enter ERC-20 contract address to check token balnace </p>
+      <p> Enter ERC-20 contract address to check token balance </p>
       <Form>
       <Row>
       <Col xs={12} md={8}>
