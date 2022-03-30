@@ -1,6 +1,6 @@
 //import logo from './logo.svg';
 import './App.css';
-import { Container, Row, Spinner, Alert, Col, Stack, Tabs, Tab, Button} from 'react-bootstrap';
+import { Container, Row, Spinner, Alert, Col, Stack, Tabs, Tab} from 'react-bootstrap';
 import Web3 from 'web3';
 import React from 'react';
 
@@ -8,6 +8,7 @@ import { ProviderInfo } from './components/ProviderInfo'
 import { AccountsList } from './components/AccountList';
 import { ProviderSelector } from './components/ProviderSelector';
 import { TokenBalance } from './components/TokenBalance'
+import { SendEthTransaction } from './components/SendEthTransaction';
 import { tab } from '@testing-library/user-event/dist/tab';
 
 //import { ThemeConsumer } from 'react-bootstrap/esm/ThemeProvider';
@@ -258,8 +259,16 @@ class App extends React.Component {
       : ("")
       }
     </Tab>
+    <Tab eventKey="profile" title="Send transaction" className="App-content">
+      {(this.state.clientConnected) ? 
+      (<SendEthTransaction account={this.state.accounts[this.state.activeAccount]}
+                     web3={this.state.web3Client}/>)
+      : ("")
+      }
+
+    </Tab>
     <Tab eventKey="contact" title="Contact">
-     <Button onClick={() => window.location = 'mailto:ethinteract@gmail.com'}>Contact us</Button>
+     <a href = "mailto:ethinteract@gmail.com" target="_blank">Contact us</a>
 
     </Tab>
   </Tabs>
