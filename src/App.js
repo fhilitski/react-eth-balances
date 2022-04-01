@@ -19,9 +19,8 @@ class App extends React.Component {
     super(props);
     this.state = {
       date: new Date(),
-      //providerURl: "HTTP://127.0.0.1:7545",
       providers : [],
-      providerURl: "http://192.168.1.182:8545",
+      providerURl: "",
       currentProvider : 0, //index of the current provider in the providers[] array
       web3Client: undefined,
       clientConnected: false,
@@ -101,7 +100,7 @@ class App extends React.Component {
 
   async getBalance(web3, accountNumber) {
     //get eth balance for the accountNumber
-
+    console.log("getting balance...");
     let errorMsg = "";
     let balanceEth = 0;
     try {
@@ -111,14 +110,13 @@ class App extends React.Component {
     catch (e) {
       errorMsg = "Error getting balance for " + accountNumber + " from the wallet. " + e;
       console.log(errorMsg);
-      balanceEth = "Error getting balance"
+      balanceEth = "Error getting balance."
     }
     return {balanceEth, errorMsg}
   }
 
   async getBalances(web3, accounts){
     //get all balances for the array of accounts[]
-    
     let balances = [];
     for (let account of accounts) {
       const {balanceEth} = await this.getBalance(web3, account);
@@ -142,7 +140,7 @@ class App extends React.Component {
   }
   
 
-  connectWeb3ClientAndGetBalances(providers, providerOptions, provideIndex){
+  connectWeb3ClientAndGetBalances(providers, providerOptions, providerIndex){
     this.setState({
       clientConnected : false,
       activeAccount : 0,
@@ -150,24 +148,31 @@ class App extends React.Component {
       balances : [] 
     });  //assume we are disconnected (even if were connected previously)
 
-    this.connectWeb3Client(providers, providerOptions, provideIndex).
-    then((res) => {
+    this.connectWeb3Client(providers, providerOptions, providerIndex)
+    .then((res) => {
       let web3 = res.web3;
       let connected = res.connected;
       let errorMsg = res.errorMsg;
       let chainID = undefined;
 
-      if (connected) this.getChainID(web3).
-      then((res) => {
+      if (connected) this.getChainID(web3)
+      .then((res) => {
         chainID = res.chainID;
         errorMsg = res.errorMsg;
-        
         this.setState({
-        providers: providers, 
-        web3Client : web3, 
-        clientConnected : connected,
-        chainID : chainID, 
-        clientError : errorMsg
+          providers: providers, 
+          web3Client : web3, 
+          clientConnected : connected,
+          chainID : chainID, 
+          clientError : errorMsg
+        });
+        console.log('getting accounts...');
+        this.getAccounts(web3)
+        .then((res) => {
+          let accounts = res.accounts;
+          let errorMsg = res.errorMsg;
+          this.getBalances(web3, accounts)
+          .then (resp => this.setState({accounts : accounts, clientError : errorMsg, balances : resp}));
         });
       })
       else this.setState({
@@ -176,15 +181,6 @@ class App extends React.Component {
         clientConnected : connected,
         chainID : chainID, 
         clientError : errorMsg
-        });
-      
-
-      if (connected) this.getAccounts(web3).
-      then((res) => {
-        let accounts = res.accounts;
-        let errorMsg = res.errorMsg;
-        this.getBalances(web3,accounts).
-        then (resp => this.setState({accounts : accounts, clientError : errorMsg, balances : resp}));
       }); 
     });
   }
@@ -220,13 +216,13 @@ class App extends React.Component {
 
   render() {
   return (
-    <Container fluid className='App App-header'>
-    <Row className="justify-content-md-center">
+    <Container fluid className="App">
+    <Row className="justify-content-md-center App-header">
       <h1> Ethereum app </h1>
     </Row>
     <Row id="providerSelectorAndInfo" className="App-content top-margin">
       <Stack direction="horizontal" gap={3}>
-      <div> Web3 provider </div>
+      <div>Web3 provider</div>
       <div><ProviderSelector providers={this.state.providers} onChange={this.providerChange} /></div>
       <div><ProviderInfo 
         provider={this.state.web3Client} 
