@@ -1,9 +1,12 @@
 import {ListGroup, Badge, Alert} from 'react-bootstrap'
+import ClipboardJS, {clipboard} from 'clipboard'
 
 function AccountsList (props) {
     let accounts = props.accounts;
     let balances = props.balances;
     let accountList;
+
+    let clipboard = new ClipboardJS(".eth-copy-account-number");
 
     if ( accounts.length === 0 ) {
       //connected, no accounts available
@@ -26,12 +29,12 @@ function AccountsList (props) {
           action
           onClick={() => props.onClick(index)}
           active={(index === props.activeAccount)}>
-          <div className="ms-2 me-auto" id={index}>
-            <div className="fw-bold"> {element} </div>
+          <div className="ms-2 me-auto">
+            <div className="fw-bold eth-account-number" id={index}> {element} </div>
             {balance}
           </div>
-          <Badge variant="primary" pill>
-            { index + 1}
+          <Badge bg="">
+              <img className="eth-copy-account-number" data-clipboard-text={element} src="copy-to-clipboard-icon-512.jpg" alt="Copy to clipboard"/>
           </Badge>
         </ListGroup.Item>)
       }); 
