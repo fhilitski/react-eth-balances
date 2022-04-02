@@ -1,4 +1,4 @@
-import {Stack, Button, FloatingLabel, Form, Alert, Row, Col, Spinner} from 'react-bootstrap'
+import {Stack, Button, FloatingLabel, Form, Alert, Row, Col, Spinner, Tooltip, OverlayTrigger} from 'react-bootstrap'
 import React from 'react';
 import { TransactionInfo } from './TransactionInfo';
 
@@ -27,6 +27,7 @@ class SendEthTransaction extends React.Component {
     this.signTx = this.signTx.bind(this);
   }
   
+  
   /*
   async getBalance(web3, ethAccount, abi, tokenAddress) {
     let contract = new web3.eth.Contract(abi, tokenAddress);
@@ -52,7 +53,7 @@ class SendEthTransaction extends React.Component {
     let fromAddress = this.accountFrom.current.value;
     let toAddress = this.accountTo.current.value;
     let valueEth = this.valueEth.current.value;
-    let valueGasInWei = this.valueGas.current.value;
+    let valueGas = this.valueGas.current.value;
     let priceGasInWei = this.priceGas.current.value;
     let transactionData = this.transactionData.current.value;
     let nonce = this.nonce.current.value;;
@@ -95,17 +96,15 @@ class SendEthTransaction extends React.Component {
       };
     };
 
-    let valueGas = undefined;
     if (inputIsValid) {
       try { 
-        valueGas = this.props.web3.utils.fromWei(valueGasInWei);
+        this.props.web3.utils.numberToHex(valueGas);
       }
       catch (problem) {
         inputIsValid = false; 
         this.setState({errorMsg : problem.toString()})
       }
       finally {
-        console.log('value Gas in ETH: ' + valueGas);
         if (valueGas < 0) {
           this.setState({errorMsg : "Gas should be non-negative!"});
           inputIsValid = false; 
@@ -143,7 +142,7 @@ class SendEthTransaction extends React.Component {
         value: valueEthInWei
       };
       console.log(transactionObject);
-      if (valueGasInWei !== "" ) transactionObject.gas = valueGasInWei;
+      if (valueGas !== "" ) transactionObject.gas = valueGas;
       if (priceGasInWei !== "" ) transactionObject.gasPrice = priceGasInWei;
       if (transactionData !== "") transactionObject.data = this.props.web3.utils.utf8ToHex(transactionData);
       if (nonce !== "") transactionObject.nonce = nonce;
@@ -202,19 +201,22 @@ class SendEthTransaction extends React.Component {
         */
       }
     });
-    
-   
-
   }
   
   render() {
-  let retElement =
-    <div id="transactionConfiguration" className="top-margin min-width " >
-     <Stack direction="horizontal" gap={3} className="align-items-start" > 
-      <div className="min-width">
-      <Form noValidate validated={false}>
-      <Row>
-      <Col>
+    const  gasValueTooltip = (props) => (
+      <Tooltip id="gasValue-tooltip" {...props}>
+        Maximum # of gas units to consume during this transaction  
+      </Tooltip>
+    );
+
+    let retElement =
+      <div id="transactionConfiguration" className="top-margin min-width " >
+      <Stack direction="horizontal" gap={3} className="align-items-start" > 
+        <div className="min-width">
+        <Form noValidate validated={false}>
+       <Row>
+       <Col>
         <FloatingLabel
           controlId="floatingInput"
           label="From address"
@@ -272,9 +274,12 @@ class SendEthTransaction extends React.Component {
 
       <Row>
       <Col>
+        <OverlayTrigger 
+          overlay={gasValueTooltip}
+        >
         <FloatingLabel
           controlId="floatingInput"
-          label="Gas limit (Wei)"
+          label="Gas limit (units)"
           className="mb-2 dark-text"
         >
         <Form.Control
@@ -284,6 +289,7 @@ class SendEthTransaction extends React.Component {
           defaultValue={undefined}
         />
         </FloatingLabel>
+        </OverlayTrigger>
       </Col>
       </Row>
       
