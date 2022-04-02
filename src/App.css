@@ -46,3 +46,8 @@
     transform: rotate(360deg);
   }
 }
+
+img.eth-copy-account-number {
+  width: 25px;
+  height: 25px;
+}
