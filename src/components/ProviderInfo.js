@@ -1,4 +1,5 @@
 import {Badge} from 'react-bootstrap'
+import ClipboardJS from 'clipboard'
 
 function ProviderInfo (props) {
     let connected = props.connected;

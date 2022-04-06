@@ -34,9 +34,6 @@
   color: #61dafb;
 }
 
-.dark-text {
-  color:#282c34;
-}
 
 @keyframes App-logo-spin {
   from {
@@ -45,9 +42,4 @@
   to {
     transform: rotate(360deg);
   }
-}
-
-img.eth-copy-account-number {
-  width: 25px;
-  height: 25px;
 }

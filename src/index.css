@@ -12,6 +12,10 @@ code {
     monospace;
 }
 
+.dark-text {
+  color:#282c34;
+}
+
 .top-margin { 
   margin-top: 1rem;
 }
@@ -33,6 +37,30 @@ code {
   box-sizing: border-box;
 }
 
+.transactimg.eth-copy-account-number {
+  width: 25px;
+  height: 25px;
+}
+
+.eth-copy-tx-info {
+  margin-left: 10px;
+  cursor:default;
+}
+
 .transaction-details-label {
-  font-size: 0.95rem;
+  font-size: 1.1rem;;
+}
+
+.transaction-details-data {
+  margin-left: 1%;
+}
+
+img.eth-copy-account-number {
+  width: 25px;
+  height: 25px;
+}
+
+.eth-copy-tx-info {
+  margin-left: 10px;
+  cursor:default;
 }

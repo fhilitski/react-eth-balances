@@ -1,5 +1,5 @@
 import {ListGroup, Badge, Alert} from 'react-bootstrap'
-import ClipboardJS, {clipboard} from 'clipboard'
+import ClipboardJS from 'clipboard'
 
 function AccountsList (props) {
     let accounts = props.accounts;
