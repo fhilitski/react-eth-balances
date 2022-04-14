@@ -32,3 +32,5 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 -  `npm run eject` is a one-way operation. Once you `eject`, you can't go back!
+
+Note: This branch uses `react-app-rewired ` and `node-polyfill-webpack-plugin` to resolve [issues with missing polyfills in webpack 5](https://github.com/ChainSafe/web3.js#web3-and-create-react-app)

@@ -57,15 +57,21 @@ class App extends React.Component {
     //let web3Provider = new Web3.providers.HttpProvider(this.state.providerURl, providerOptions);
     let selectedProvider = providers[providerIndex];
     let currentProvider = undefined;
-  
+    let web3 = undefined;
+
+    console.log('Sthis is a selected provider: ')
+    console.log(selectedProvider.isMetaMask);
+
     if (typeof(selectedProvider) == "string") {
-      currentProvider = new Web3.providers.HttpProvider(selectedProvider, providerOptions);
+      //the selectedProvider is a string, for example http://localhost:12345
+      currentProvider = new Web3.providers.HttpProvider(selectedProvider, providerOptions);   
     }
     else {
-      currentProvider = selectedProvider;
+      //the selectedProvider is an object, for example window.ethereum
+      currentProvider = selectedProvider; 
     }
 
-    let web3 = new Web3(currentProvider);  
+    web3 = new Web3(currentProvider);
     let errorMsg = "";
     let connected = false;
     try { 
@@ -82,11 +88,15 @@ class App extends React.Component {
     return {web3, connected, errorMsg}
   }
 
-  async getAccounts(web3) { 
+  async getAccounts(web3_in) { 
     let errorMsg = ""; 
     let accounts = []; 
+    console.log(web3_in)
     try {
-      accounts = await web3.eth.getAccounts();
+      //accounts = await web3_in.eth.getAccounts();
+      if (web3_in.isMetaMask) accounts = await web3_in.request({ method: 'eth_requestAccounts' })
+      else accounts = await web3_in.eth.getAccounts();
+      //accounts   = await web3_in.eth.requestAccounts();
     }
     catch (e)
     {
@@ -154,6 +164,7 @@ class App extends React.Component {
       let connected = res.connected;
       let errorMsg = res.errorMsg;
       let chainID = undefined;
+      let web3ForAccounts = undefined;
 
       if (connected) this.getChainID(web3)
       .then((res) => {
@@ -167,7 +178,16 @@ class App extends React.Component {
           clientError : errorMsg
         });
         console.log('getting accounts...');
-        this.getAccounts(web3)
+        if (providers[providerIndex].isMetaMask) {
+          console.log('this is Metamask...');
+          web3ForAccounts = providers[providerIndex];
+        } 
+        else {
+          console.log('this is not meta mask');
+          web3ForAccounts = web3;
+        }
+        console.log('web#foraccounts:'); console.log(web3ForAccounts)
+        this.getAccounts(web3ForAccounts)
         .then((res) => {
           let accounts = res.accounts;
           let errorMsg = res.errorMsg;
