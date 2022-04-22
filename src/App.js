@@ -59,9 +59,6 @@ class App extends React.Component {
     let currentProvider = undefined;
     let web3 = undefined;
 
-    console.log('Sthis is a selected provider: ')
-    console.log(selectedProvider.isMetaMask);
-
     if (typeof(selectedProvider) == "string") {
       //the selectedProvider is a string, for example http://localhost:12345
       currentProvider = new Web3.providers.HttpProvider(selectedProvider, providerOptions);   
@@ -186,7 +183,7 @@ class App extends React.Component {
           console.log('this is not meta mask');
           web3ForAccounts = web3;
         }
-        console.log('web#foraccounts:'); console.log(web3ForAccounts)
+        
         this.getAccounts(web3ForAccounts)
         .then((res) => {
           let accounts = res.accounts;

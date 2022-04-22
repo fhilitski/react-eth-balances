@@ -153,11 +153,27 @@ class SendEthTransaction extends React.Component {
   }
 
   signTx(){
-    console.log('sign tx...')
+    console.log('calling eth.signTransaction');
+    let signedTranaction = undefined;
+    let errorMsg = "";
+
+    this.validateTxInput().then(response => {
+      if (response.inputIsValid) {
+        this.setState({isLoading : true, errorMsg : undefined});  
+        this.props.web3.eth.signTransaction(response.transactionObject, response.transactionObject.from)
+        .then( response => {console.log(signedTranaction);
+          this.setState({isLoading : false, transactionReceipt : signedTranaction});})
+          
+        .catch((error) => {
+          errorMsg = error.message;
+          this.setState({isLoading : false, errorMsg: ((error.message === undefined) ? error.toString() : error.message)})
+        }); 
+      }
+    });
+
   }
 
   sendTx() {
-    console.log('Sent Tx clicked...');
     this.validateTxInput().then(response => {
       if (response.inputIsValid) {
         this.setState({isLoading : true, errorMsg : undefined});  
@@ -175,30 +191,6 @@ class SendEthTransaction extends React.Component {
         .on('error', (error) =>
            { this.setState({isLoading : false, errorMsg: ((error.message === undefined) ? error.toString() : error.message)})}
         );
-        /*
-        this.getBalance(this.props.web3, this.props.account, this.minABI, contractAddress).then((res) => {
-          console.log("Formatted balance: " + res.formatedBalance);
-          console.log("Error message: " + res.errorMsg);
-          tokenBalance = res.formatedBalance;
-          this.getName(this.props.web3, this.minABI, contractAddress).then((respGetName) =>
-          {
-            contractName = respGetName.contractName;
-            let errors = (res.errorMsg !== "") ? res.errorMsg : respGetName.errorMsg;
-            this.getSymbol(this.props.web3, this.minABI, contractAddress).then((respGetSymbol) =>
-            {
-              contractSymbol = respGetSymbol.
-              errors = ( errors !== "") ? errors : respGetSymbol.errorMsg;
-              this.setState({isLoading : false,
-                             tokenBalance : tokenBalance, 
-                             contractName : contractName, 
-                             contractSymbol : respGetSymbol.contractSymbol,
-                             errorMsg : errors
-  
-              });
-            });
-          });       
-        });
-        */
       }
     });
   }
@@ -274,9 +266,7 @@ class SendEthTransaction extends React.Component {
 
       <Row>
       <Col>
-        <OverlayTrigger 
-          overlay={gasValueTooltip}
-        >
+        <OverlayTrigger overlay={gasValueTooltip}>
         <FloatingLabel
           controlId="floatingInput"
           label="Gas limit (units)"
