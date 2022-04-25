@@ -7,8 +7,9 @@ class SendEthTransaction extends React.Component {
     super(props);
     this.state = {
       transactionReceipt : undefined,
-      isLoading : false,
-      errorMsg : undefined
+      isLoading          : false,
+      errorMsg           : undefined,
+      estimatedGasPrice  : undefined
     }
 
     this.account = props.account;
@@ -27,6 +28,12 @@ class SendEthTransaction extends React.Component {
     this.signTx = this.signTx.bind(this);
   }
   
+  componentDidMount(){
+    this.props.web3.eth.getGasPrice()
+    .then((estGasPrice) => {
+        this.setState({estimatedGasPrice : estGasPrice})
+      })
+  }
   
   /*
   async getBalance(web3, ethAccount, abi, tokenAddress) {
@@ -122,8 +129,10 @@ class SendEthTransaction extends React.Component {
         this.setState({errorMsg : problem.toString()})
       }
       finally {
-        if (priceGasInWei < 0)
-        this.setState({errorMsg : "Gas price should be non-negative!"})
+        if (priceGasInWei < 0) {
+          this.setState({errorMsg : "Gas price should be non-negative!"});
+          inputIsValid = false;
+        }
       }
     };
 
@@ -143,7 +152,7 @@ class SendEthTransaction extends React.Component {
       };
       console.log(transactionObject);
       if (valueGas !== "" ) transactionObject.gas = valueGas;
-      if (priceGasInWei !== "" ) transactionObject.gasPrice = priceGasInWei;
+      if (priceGasInWei !== "" ) {transactionObject.gasPrice = priceGasInWei} else {transactionObject.gasPrice = await this.props.web3.eth.getGasPrice()}
       if (transactionData !== "") transactionObject.data = this.props.web3.utils.utf8ToHex(transactionData);
       if (nonce !== "") transactionObject.nonce = nonce;
       console.log(transactionObject);
@@ -161,16 +170,17 @@ class SendEthTransaction extends React.Component {
       if (response.inputIsValid) {
         this.setState({isLoading : true, errorMsg : undefined});  
         this.props.web3.eth.signTransaction(response.transactionObject, response.transactionObject.from)
-        .then( response => {console.log(signedTranaction);
-          this.setState({isLoading : false, transactionReceipt : signedTranaction});})
-          
+        .then( response => { 
+          let signedTransaction = response;
+          console.log(signedTransaction);
+          this.setState({isLoading : false, transactionReceipt : signedTransaction});
+        }) 
         .catch((error) => {
           errorMsg = error.message;
           this.setState({isLoading : false, errorMsg: ((error.message === undefined) ? error.toString() : error.message)})
         }); 
       }
     });
-
   }
 
   sendTx() {
@@ -199,6 +209,12 @@ class SendEthTransaction extends React.Component {
     const  gasValueTooltip = (props) => (
       <Tooltip id="gasValue-tooltip" {...props}>
         Maximum # of gas units to consume during this transaction  
+      </Tooltip>
+    );
+
+    const  gasPriceTooltip = (props) => (
+      <Tooltip id="gasPrice-tooltip" {...props}>
+        The price of gas for this transaction in wei; defaults to web3.eth.gasPrice  
       </Tooltip>
     );
 
@@ -285,6 +301,7 @@ class SendEthTransaction extends React.Component {
       
       <Row>
       <Col>
+        <OverlayTrigger overlay={gasPriceTooltip}>
         <FloatingLabel
           controlId="floatingInput"
           label="Gas price (Wei)"
@@ -293,10 +310,11 @@ class SendEthTransaction extends React.Component {
         <Form.Control
           type="text"
           className="dark-text"
-          defaultValue={undefined}
+          defaultValue={this.state.estimatedGasPrice}
           ref={this.priceGas}
         />
         </FloatingLabel>
+        </OverlayTrigger>
       </Col>
       </Row>
 
@@ -329,6 +347,7 @@ class SendEthTransaction extends React.Component {
           className="dark-text"
           placeholder="0"
           ref={this.nonce}
+          defaultValue={0}
         />
         </FloatingLabel>
       </Col>

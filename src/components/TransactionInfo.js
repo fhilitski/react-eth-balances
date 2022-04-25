@@ -8,6 +8,12 @@ function TransactionInfo (props) {
 
     let clipboard = new ClipboardJS(".eth-copy-tx-info");
 
+    //check if the transactionObject is actually a signed transaction
+    if (transactionObject.raw !== undefined) {
+       let raw = transactionObject.raw;
+       transactionObject = transactionObject.tx; 
+       console.log('Signed tx:' + raw);
+    }
     //check for confirmation
     if (transactionObject.confirmationNumber !== undefined) transactionConfirmed = transactionObject.confirmationNumber;
 
