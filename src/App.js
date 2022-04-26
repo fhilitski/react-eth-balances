@@ -74,10 +74,10 @@ class App extends React.Component {
     try { 
       const res = await web3.eth.net.isListening();
       connected = res;
-      console.log('Web3 client is listening: ' + connected);
+      console.log("Web3 client is listening: " + connected);
     }  
     catch (e) {
-      errorMsg = "Error conecting to the Eth client or wallet. " + e;
+      errorMsg = "Error conecting to the Eth client or wallet: " + e;
       console.log(errorMsg); 
     };
     //do not set state in this function, use returned values to set state as:
@@ -88,16 +88,16 @@ class App extends React.Component {
   async getAccounts(web3_in) { 
     let errorMsg = ""; 
     let accounts = []; 
-    console.log(web3_in)
+  
     try {
       //accounts = await web3_in.eth.getAccounts();
-      if (web3_in.isMetaMask) accounts = await web3_in.request({ method: 'eth_requestAccounts' })
+      if (web3_in.isMetaMask) accounts = await web3_in.request({method: "eth_requestAccounts"})
       else accounts = await web3_in.eth.getAccounts();
       //accounts   = await web3_in.eth.requestAccounts();
     }
     catch (e)
     {
-      errorMsg = "Error getting accounts from the wallet. " + e;
+      errorMsg = "Error getting accounts from the wallet: " + e;
       console.log(errorMsg); 
     }
     //do not set state in this function, use returned values to set state as:
@@ -107,7 +107,7 @@ class App extends React.Component {
 
   async getBalance(web3, accountNumber) {
     //get eth balance for the accountNumber
-    console.log("getting balance...");
+    console.log("DEBUG: getting balance...");
     let errorMsg = "";
     let balanceEth = 0;
     try {
@@ -146,7 +146,6 @@ class App extends React.Component {
     return {chainID, errorMsg}
   }
   
-
   connectWeb3ClientAndGetBalances(providers, providerOptions, providerIndex){
     this.setState({
       clientConnected : false,
@@ -183,7 +182,7 @@ class App extends React.Component {
           console.log('this is not meta mask');
           web3ForAccounts = web3;
         }
-        
+
         this.getAccounts(web3ForAccounts)
         .then((res) => {
           let accounts = res.accounts;
@@ -211,7 +210,6 @@ class App extends React.Component {
   }
 
   componentDidMount(){  
-
     let providers = [];
     //add browser wallet if present
     //let browserProvider = Web3.givenProvider;

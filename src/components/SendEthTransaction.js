@@ -219,7 +219,7 @@ class SendEthTransaction extends React.Component {
     );
 
     let retElement =
-      <div id="transactionConfiguration" className="top-margin min-width " >
+      <div id="transactionConfiguration" className="top-margin min-width" >
       <Stack direction="horizontal" gap={3} className="align-items-start" > 
         <div className="min-width">
         <Form noValidate validated={false}>
@@ -347,7 +347,7 @@ class SendEthTransaction extends React.Component {
           className="dark-text"
           placeholder="0"
           ref={this.nonce}
-          defaultValue={0}
+          defaultValue={0} //really should be based on web3.eth.getTransactionCount(address [, defaultBlock] [, callback])
         />
         </FloatingLabel>
       </Col>
