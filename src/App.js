@@ -219,6 +219,7 @@ class App extends React.Component {
     //hard-code a couple of options for now
     providers.push("http://192.168.1.182:8545");
     providers.push("http://127.0.0.1:7545");
+    providers.push("https://rpc.ethermine.org/");
 
     this.connectWeb3ClientAndGetBalances(providers, this.props.providerOptions, 0);
 
