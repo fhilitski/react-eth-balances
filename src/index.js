@@ -8,10 +8,23 @@ import App from './App';
 
 //import reportWebVitals from './reportWebVitals';
 //import Web3 from 'web3';
-
+let po = {
+  keepAlive: true,
+  withCredentials: false,
+  timeout: 20000, // ms
+  headers: [
+      
+      {
+        name: "X-CustomHeader",
+        value: "ethInteract"
+      }
+  ]
+};
 ReactDOM.render(
+  
+
   <React.StrictMode>
-    <App />
+    <App providerOptions={po} />
   </React.StrictMode>,
   document.getElementById('root')
 );
